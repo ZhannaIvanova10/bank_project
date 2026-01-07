@@ -1,175 +1,33 @@
 """
 Основная программа для домашнего задания 13.2.
-Реализует CLI интерфейс для работы с банковскими транзакциями.
+Объединяет весь функционал из домашних заданий 9.1-13.2.
 """
-import sys
-import os
-import json
 import re
-from collections import Counter
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+
+# ============================================================================
+# ИМПОРТ ФУНКЦИЙ ИЗ МОДУЛЕЙ (прямые импорты)
+# ============================================================================
+
+# Из задания 9.2 - маскировка и форматирование даты
+from src.masks.masks import get_mask_card_number, get_mask_account
+from src.utils.date_utils import format_date
+# Из заданий 12.1 и 13.1 - чтение файлов
+from src.utils.file_handlers import read_json_file, read_csv_file, read_xlsx_file
+
+# Из заданий 10.1 и 11.1 - фильтрация и сортировка
+from src.utils.filters import filter_by_status, filter_by_currency, sort_by_date
+
+# Из задания 10.1 - альтернативная фильтрация по статусу
+from src.processing.processing import filter_by_state
+
+# Из задания 13.2 - основные функции
+from src.search import process_bank_search
+from src.counter import process_bank_operations
 
 
 # ============================================================================
-# ОСНОВНЫЕ ФУНКЦИИ ИЗ ЗАДАНИЯ
-# ============================================================================
-
-def process_bank_search(data: List[Dict], search: str) -> List[Dict]:
-    """
-    Фильтрует список транзакций по строке поиска в описании.
-
-    Args:
-        data: Список словарей с данными о банковских операциях
-        search: Строка для поиска (регулярное выражение)
-
-    Returns:
-        Отфильтрованный список транзакций
-    """
-    if not data or not search:
-        return []
-
-    result = []
-    try:
-        pattern = re.compile(search, re.IGNORECASE)
-    except re.error:
-        pattern = re.compile(re.escape(search), re.IGNORECASE)
-
-    for operation in data:
-        description = operation.get("description", "")
-        if description and pattern.search(description):
-            result.append(operation)
-
-    return result
-
-
-def process_bank_operations(data: List[Dict], categories: List[str]) -> Dict[str, int]:
-    """
-    Подсчитывает количество операций по категориям.
-
-    Args:
-        data: Список словарей с данными о банковских операциях
-        categories: Список категорий операций
-
-    Returns:
-        Словарь, где ключи - категории, значения - количество операций
-    """
-    if not data:
-        return {cat: 0 for cat in categories}
-
-    descriptions = []
-    for op in data:
-        desc = op.get("description", "")
-        if desc:
-            descriptions.append(desc.strip())
-
-    category_counts = Counter(descriptions)
-    return {cat: category_counts.get(cat, 0) for cat in categories}
-
-
-# ============================================================================
-# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# ============================================================================
-
-def mask_card_number(card_number: str) -> str:
-    """Маскирует номер банковской карты."""
-    card_str = str(card_number)
-    digits = ''.join(filter(str.isdigit, card_str))
-
-    if len(digits) == 16:
-        return f"{digits[:4]} {digits[4:6]}** **** {digits[-4:]}"
-    return card_str
-
-
-def mask_account_number(account: str) -> str:
-    """Маскирует номер банковского счета."""
-    if not account:
-        return ""
-
-    acc_str = str(account)
-    digits = ''.join(filter(str.isdigit, acc_str))
-
-    if len(digits) >= 4:
-        return f"**{digits[-4:]}"
-    return acc_str
-
-
-def format_date(date_str: str) -> str:
-    """Форматирует дату в формат DD.MM.YYYY."""
-    try:
-        if 'T' in date_str:
-            dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-        else:
-            for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'):
-                try:
-                    dt = datetime.strptime(date_str, fmt)
-                    break
-                except ValueError:
-                    continue
-            else:
-                return date_str
-        return dt.strftime('%d.%m.%Y')
-    except Exception:
-        return date_str
-
-
-def filter_by_status(data: List[Dict], status: str) -> List[Dict]:
-    """Фильтрует транзакции по статусу."""
-    if not data:
-        return []
-
-    status_lower = status.lower()
-    return [op for op in data if op.get('state', '').lower() == status_lower]
-
-
-def filter_by_currency(data: List[Dict], currency: str = 'RUB') -> List[Dict]:
-    """Фильтрует транзакции по валюте."""
-    if not data:
-        return []
-
-    currency_upper = currency.upper()
-    filtered = []
-
-    for op in data:
-        # Проверяем разные форматы данных
-        currency_info = op.get('operationAmount', {}).get('currency', {}) or op.get('currency', {})
-
-        if isinstance(currency_info, dict):
-            if currency_info.get('code', '').upper() == currency_upper:
-                filtered.append(op)
-        elif str(currency_info).upper() == currency_upper:
-            filtered.append(op)
-
-    return filtered
-
-
-def sort_by_date(data: List[Dict], reverse: bool = False) -> List[Dict]:
-    """Сортирует транзакции по дате."""
-    if not data:
-        return []
-
-    def get_date(op: Dict) -> datetime:
-        date_str = op.get('date', '')
-        try:
-            return datetime.fromisoformat(date_str.replace('Z', ''))
-        except (ValueError, AttributeError):
-            return datetime.min
-
-    return sorted(data, key=get_date, reverse=reverse)
-
-
-def read_json_file(file_path: str) -> List[Dict[str, Any]]:
-    """Читает данные из JSON-файла."""
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Ошибка при чтении JSON-файла: {e}")
-        return []
-
-
-# ============================================================================
-# ПОЛЬЗОВАТЕЛЬСКИЙ ИНТЕРФЕЙС
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (только UI)
 # ============================================================================
 
 def get_user_choice(options: List[str], prompt: str) -> str:
@@ -187,7 +45,6 @@ def get_user_choice(options: List[str], prompt: str) -> str:
                 return options[choice_num - 1]
 
         print(f"⚠ Пожалуйста, введите число от 1 до {len(options)}")
-
 
 def get_yes_no(prompt: str) -> bool:
     """Получает ответ Да/Нет."""
@@ -225,7 +82,7 @@ def print_operation(op: Dict[str, Any], index: Optional[int] = None):
         print(f"ОПЕРАЦИЯ #{index + 1}")
         print(f"{'=' * 50}")
 
-    # Дата
+    # Дата (из задания 9.2)
     date_str = op.get("date", "")
     if date_str:
         formatted_date = format_date(date_str)
@@ -235,24 +92,23 @@ def print_operation(op: Dict[str, Any], index: Optional[int] = None):
     description = op.get("description", "Без описания")
     print(f"📝 Описание: {description}")
 
-    # Отправитель и получатель
+    # Отправитель и получатель (из задания 9.2)
     from_acc = op.get("from", "")
     to_acc = op.get("to", "")
 
     if from_acc:
         acc_str = str(from_acc)
         if "счет" in acc_str.lower():
-            masked_from = f"Счет {mask_account_number(acc_str)}"
+            masked_from = f"Счет {get_mask_account(acc_str)}"
         else:
-            masked_from = mask_card_number(acc_str)
+            masked_from = get_mask_card_number(acc_str)
         print(f"⬆ Отправитель: {masked_from}")
-
     if to_acc:
         acc_str = str(to_acc)
         if "счет" in acc_str.lower():
-            masked_to = f"Счет {mask_account_number(acc_str)}"
+            masked_to = f"Счет {get_mask_account(acc_str)}"
         else:
-            masked_to = mask_card_number(acc_str)
+            masked_to = get_mask_card_number(acc_str)
         print(f"⬇ Получатель: {masked_to}")
 
     # Сумма и валюта
@@ -264,7 +120,6 @@ def print_operation(op: Dict[str, Any], index: Optional[int] = None):
         currency_info = operation_amount.get("currency", {})
     else:
         currency_info = op.get("currency", {})
-
     if isinstance(currency_info, dict):
         currency_code = currency_info.get("code", "RUB")
         currency_name = currency_info.get("name", "")
@@ -282,8 +137,20 @@ def print_operation(op: Dict[str, Any], index: Optional[int] = None):
     state = op.get("state", "UNKNOWN")
     status_icon = "✅" if state == "EXECUTED" else "❌" if state == "CANCELED" else "⏳"
     print(f"{status_icon} Статус: {state}")
-
-
+def load_transactions(file_type: str) -> List[Dict[str, Any]]:
+    """
+    Загружает транзакции из файла выбранного типа.
+    Использует функции из заданий 12.1 и 13.1.
+    """
+    if file_type.lower() == 'json':
+        return read_json_file('data/operations.json')
+    elif file_type.lower() == 'csv':
+        return read_csv_file('data/transactions.csv')
+    elif file_type.lower() == 'xlsx':
+        return read_xlsx_file('data/transactions.xlsx')
+    else:
+        print("❌ Неподдерживаемый тип файла")
+        return []
 # ============================================================================
 # ОСНОВНАЯ ЛОГИКА ПРОГРАММЫ
 # ============================================================================
@@ -298,59 +165,52 @@ def main():
     file_options = [
         "Получить информацию о транзакциях из JSON-файла",
         "Получить информацию о транзакциях из CSV-файла",
-        "Получить информацию о транзакциях из XLSX-файла"
+        "Получить информацию о транзакциях из XLSX-файла",
     ]
 
     file_choice = get_user_choice(file_options, "📂 Выберите тип файла для загрузки:")
 
-    # Загрузка данных
-    data_file = None
+    # Определяем тип файла и загружаем данные
     data = []
-
     try:
         if "JSON" in file_choice.upper():
             print("\n✅ Для обработки выбран JSON-файл.")
-            data_file = "data/operations.json"
-            data = read_json_file(data_file)
+            data = load_transactions('json')
         elif "CSV" in file_choice.upper():
             print("\n✅ Для обработки выбран CSV-файл.")
-            data_file = "data/transactions.csv"
-            print("⚠ В упрощенной версии поддерживается только JSON")
-            return
+            data = load_transactions('csv')
         elif "XLSX" in file_choice.upper():
             print("\n✅ Для обработки выбран XLSX-файл.")
-            data_file = "data/transactions.xlsx"
-            print("⚠ В упрощенной версии поддерживается только JSON")
-            return
+            data = load_transactions('xlsx')
         else:
             print("\n❌ Неизвестный тип файла")
             return
     except Exception as e:
         print(f"\n❌ Ошибка загрузки файла: {e}")
-        print("Убедитесь, что файл существует в папке data/")
+        print("Убедитесь, что файлы существуют в папке data/")
+        print("Нужные файлы: operations.json, transactions.csv, transactions.xlsx")
         return
 
     print(f"\n📊 Успешно загружено {len(data)} операций.")
-
     if not data:
         print("\n⚠ Нет данных для обработки.")
         return
 
-    # Фильтрация по статусу
+    # 1. Фильтрация по статусу (из задания 10.1)
     print("\n" + "=" * 40)
     print("🔍 ФИЛЬТРАЦИЯ ПО СТАТУСУ")
     print("=" * 40)
     status = get_status()
 
-    filtered_data = filter_by_status(data, status)
+    # Используем filter_by_state из src/processing/processing.py
+    filtered_data = filter_by_state(data, status)
     print(f"\n✅ Операции отфильтрованы по статусу '{status}'")
     print(f"📈 Найдено операций: {len(filtered_data)}")
 
     if not filtered_data:
         print("\n⚠ Не найдено ни одной транзакции с указанным статусом.")
         return
-
-    # Сортировка
+    # 2. Сортировка по дате (из задания 10.1)
     print("\n" + "=" * 40)
     print("📅 СОРТИРОВКА")
     print("=" * 40)
@@ -358,28 +218,30 @@ def main():
         sort_order = get_user_choice(["по возрастанию", "по убыванию"], "Выберите порядок сортировки:")
         reverse_order = sort_order == "по убыванию"
 
+        # Используем sort_by_date из src/utils/filters.py
         filtered_data = sort_by_date(filtered_data, reverse_order)
         print(f"\n✅ Операции отсортированы {sort_order}")
 
-    # Фильтрация по валюте
+    # 3. Фильтрация по валюте (из задания 11.1)
     print("\n" + "=" * 40)
     print("💰 ФИЛЬТРАЦИЯ ПО ВАЛЮТЕ")
     print("=" * 40)
     if get_yes_no("Выводить только рублевые транзакции?"):
+        # Используем filter_by_currency из src/utils/filters.py
         filtered_data = filter_by_currency(filtered_data, "RUB")
         print(f"\n✅ Оставлено рублевых транзакций: {len(filtered_data)}")
-
-    # Поиск по ключевому слову (ОСНОВНАЯ ФУНКЦИЯ ИЗ ЗАДАНИЯ)
+    # 4. Поиск по описанию (ОСНОВНАЯ ФУНКЦИЯ из задания 13.2)
     print("\n" + "=" * 40)
     print("🔎 ПОИСК ПО ОПИСАНИЮ (регулярные выражения)")
     print("=" * 40)
     if get_yes_no("Отфильтровать список транзакций по определенному слову в описании?"):
         search_word = input("\nВведите слово для поиска в описании: ").strip()
         if search_word:
+            # Используем process_bank_search из src/search.py
             filtered_data = process_bank_search(filtered_data, search_word)
             print(f"\n🔍 Найдено операций с '{search_word}' в описании: {len(filtered_data)}")
 
-    # Подсчет по категориям (ОСНОВНАЯ ФУНКЦИЯ ИЗ ЗАДАНИЯ)
+    # 5. Статистика по категориям (ОСНОВНАЯ ФУНКЦИЯ из задания 13.2)
     if filtered_data:
         print("\n" + "=" * 40)
         print("📊 СТАТИСТИКА ПО КАТЕГОРИЯМ")
@@ -388,19 +250,19 @@ def main():
             # Получаем уникальные категории
             categories = list(set(op.get("description", "") for op in filtered_data if op.get("description")))
             if categories:
+                # Используем process_bank_operations из src/counter.py
                 category_stats = process_bank_operations(filtered_data, categories)
                 print("\n📈 Статистика по категориям:")
                 for category, count in sorted(category_stats.items(), key=lambda x: x[1], reverse=True):
                     if count > 0 and category:
                         print(f"  • {category}: {count} операций")
 
-    # Вывод результатов
+    # 6. Вывод результатов с форматированием (из задания 9.2)
     print("\n" + "=" * 60)
     print("📄 РЕЗУЛЬТАТЫ ОБРАБОТКИ")
     print("=" * 60)
     print(f"Всего банковских операций в выборке: {len(filtered_data)}")
     print("=" * 60)
-
     if not filtered_data:
         print("\n⚠ Не найдено ни одной транзакции, подходящей под ваши условия фильтрации.")
         return
@@ -418,8 +280,6 @@ def main():
     print("\n" + "=" * 60)
     print("🎉 ОБРАБОТКА ЗАВЕРШЕНА! СПАСИБО ЗА ИСПОЛЬЗОВАНИЕ ПРОГРАММЫ!")
     print("=" * 60)
-
-
 # ============================================================================
 # ТОЧКА ВХОДА
 # ============================================================================
@@ -432,5 +292,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Неожиданная ошибка: {e}")
         import traceback
-
         traceback.print_exc()

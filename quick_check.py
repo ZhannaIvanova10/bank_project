@@ -8,7 +8,7 @@ files = {
     "src/counter.py": "Функция подсчета (process_bank_operations)",
     "main.py": "Основная программа",
     "data/operations.json": "Тестовые данные",
-    "test_homework.py": "Тестовый скрипт"
+    "test_homework.py": "Тестовый скрипт",
 }
 
 all_ok = True
@@ -18,11 +18,11 @@ for file_path, description in files.items():
         print(f"   📍 {file_path}")
         # Простая проверка содержимого
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 size = len(content)
                 print(f"   📏 Размер: {size} символов")
-                
+
                 if "search.py" in file_path:
                     if "process_bank_search" in content and "import re" in content:
                         print("   ✓ Содержит process_bank_search и re")

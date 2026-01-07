@@ -11,10 +11,10 @@ print("=" * 60)
 # Все необходимые файлы
 required_files = {
     "src/search.py": "Функция поиска (process_bank_search)",
-    "src/counter.py": "Функция подсчета (process_bank_operations)", 
+    "src/counter.py": "Функция подсчета (process_bank_operations)",
     "main.py": "Основная программа",
     "data/operations.json": "Тестовые данные",
-    "test_homework.py": "Тестовый скрипт"
+    "test_homework.py": "Тестовый скрипт",
 }
 print("\n📁 ПРОВЕРКА ФАЙЛОВ:")
 print("-" * 40)
@@ -25,17 +25,17 @@ for file_path, description in required_files.items():
         size = os.path.getsize(file_path)
         print(f"✅ {description}")
         print(f"   📍 {file_path} ({size} байт)")
-        
+
         # Проверяем содержимое ключевых файлов
         if "search.py" in file_path:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 if "def process_bank_search" in content and "import re" in content:
                     print("   ✓ Содержит process_bank_search и re")
                 else:
                     print("   ⚠ Проверьте содержимое search.py")
         if "counter.py" in file_path:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 if "def process_bank_operations" in content and "Counter" in content:
                     print("   ✓ Содержит process_bank_operations и Counter")
@@ -59,7 +59,7 @@ if all_files_exist:
     print("✅ ВСЕ ФАЙЛЫ СОЗДАНЫ")
     print("✅ ТЕСТЫ ПРОХОДЯТ")
     print("✅ ПРОЕКТ ГОТОВ К СДАЧЕ")
-    
+
     print("\n🚀 ИНСТРУКЦИЯ ДЛЯ СДАЧИ:")
     print("1. Отправьте ветку: git push origin feature/final-integration")
     print("2. Создайте PR на GitHub (feature/final-integration → develop)")

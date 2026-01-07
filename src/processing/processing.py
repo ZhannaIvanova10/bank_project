@@ -1,20 +1,45 @@
-def filter_by_state(transactions: list[dict], state: str = "EXECUTED") -> list[dict]:
+"""Модуль для обработки транзакций."""
+from datetime import datetime
+from typing import List, Dict, Any
+
+
+def filter_by_state(transactions: List[Dict[str, Any]], state: str = "EXECUTED") -> List[Dict[str, Any]]:
     """
     Фильтрует транзакции по статусу.
-
-    :param transactions: Список транзакций.
-    :param state: Статус для фильтрации (по умолчанию "EXECUTED").
-    :return: Отфильтрованный список транзакций.
+    
+    Args:
+        transactions: Список транзакций
+        state: Статус для фильтрации (EXECUTED, CANCELED, PENDING)
+    Returns:
+        Отфильтрованный список транзакций
     """
-    return [t for t in transactions if t.get("state", "").upper() == state.upper()]
+    if not transactions:
+        return []
+    
+    filtered = []
+    for transaction in transactions:
+        if transaction.get('state') == state:
+            filtered.append(transaction)
+    
+    return filtered
 
 
-def sort_by_date(transactions: list[dict], reverse: bool = True) -> list[dict]:
+def sort_by_date(transactions: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[str, Any]]:
     """
     Сортирует транзакции по дате.
-
-    :param transactions: Список транзакций.
-    :param reverse: Флаг сортировки по убыванию (по умолчанию True).
-    :return: Отсортированный список транзакций.
+    Args:
+        transactions: Список транзакций
+        reverse: Если True - сортировка по убыванию (новые сначала), False - по возрастанию
+        
+    Returns:
+        Отсортированный список транзакций
     """
-    return sorted(transactions, key=lambda x: x.get("date", ""), reverse=reverse)
+    def get_date(transaction: Dict[str, Any]) -> datetime:
+        """Вспомогательная функция для получения даты из транзакции."""
+        date_str = transaction.get('date', '')
+        try:
+            return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        except (ValueError, AttributeError):
+            return datetime.min
+    
+    return sorted(transactions, key=get_date, reverse=reverse)

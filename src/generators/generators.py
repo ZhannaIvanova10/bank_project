@@ -1,4 +1,5 @@
-from collections.abc import Iterator, Generator
+from collections.abc import Generator, Iterator
+
 
 def filter_by_currency(transactions: list[dict], currency: str) -> Iterator[dict]:
     """Фильтрует транзакции по валюте."""
@@ -7,10 +8,12 @@ def filter_by_currency(transactions: list[dict], currency: str) -> Iterator[dict
         if op_amount.get("currency", {}).get("code") == currency:
             yield transaction
 
+
 def transaction_descriptions(transactions: list[dict]) -> Generator[str, None, None]:
     """Генерирует описания транзакций."""
     for transaction in transactions:
         yield transaction.get("description", "")
+
 
 def card_number_generator(start: int, end: int) -> Generator[str, None, None]:
     """Генерирует номера карт."""

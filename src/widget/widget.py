@@ -1,4 +1,4 @@
-from src.masks.masks import get_mask_card_number, get_mask_account
+from src.masks.masks import get_mask_account, get_mask_card_number
 
 
 def mask_account_card(data: str) -> str | None:
@@ -30,6 +30,7 @@ def get_date(date_str: str) -> str | None:
     :return: Дата в формате ДД.ММ.ГГГГ или None в случае ошибки.
     """
     from datetime import datetime
+
     try:
         date_obj = datetime.fromisoformat(date_str)
         return date_obj.strftime("%d.%m.%Y")

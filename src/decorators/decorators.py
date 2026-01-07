@@ -1,14 +1,16 @@
 from collections.abc import Callable
-from typing import Any, Optional
 from functools import wraps
+from typing import Any, Optional
+
 
 def log(filename: Optional[str] = None) -> Callable:
     """
     Декоратор для логирования работы функций.
-    
+
     :param filename: Имя файла для записи логов (если None, логи выводятся в консоль).
     :return: Декорированная функция.
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
@@ -29,5 +31,7 @@ def log(filename: Optional[str] = None) -> Callable:
                 else:
                     print(message)
                 raise
+
         return wrapper
+
     return decorator

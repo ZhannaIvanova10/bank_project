@@ -2,21 +2,21 @@
 Основной модуль для домашнего задания 13.2.
 Реализует логику работы с банковскими транзакциями.
 """
-import sys
+
 import os
-from typing import List, Dict, Optional, Any
+import sys
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 # Добавляем путь к модулям проекта
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    from src.utils.file_handlers import read_json_file, read_csv_file, read_xlsx_file
-    from src.utils.filters import filter_by_status, filter_by_currency, sort_by_date
-    from src.search import process_bank_search
-    from src.masks.masks import get_mask_card_number, get_mask_account
     from src.counter import process_bank_operations
-
+    from src.masks.masks import get_mask_account, get_mask_card_number
+    from src.search import process_bank_search
+    from src.utils.file_handlers import read_csv_file, read_json_file, read_xlsx_file
+    from src.utils.filters import filter_by_currency, filter_by_status, sort_by_date
 
     # Создаем адаптерные функции
     def mask_card_number(card_number: str) -> str:
@@ -26,14 +26,12 @@ try:
         except Exception:
             return str(card_number)
 
-
     def mask_account_number(account: str) -> str:
         """Адаптер для get_mask_account."""
         try:
             return get_mask_account(account)
         except Exception:
             return str(account)
-
 
     print("✅ Все модули успешно импортированы")
 
@@ -54,11 +52,11 @@ except ImportError as e:
 def format_date(date_str: str) -> str:
     """Форматирует дату в формат DD.MM.YYYY."""
     try:
-        if 'T' in date_str:
-            dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        if "T" in date_str:
+            dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
         else:
             # Попробуем разные форматы
-            for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'):
+            for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"):
                 try:
                     dt = datetime.strptime(date_str, fmt)
                     break
@@ -66,7 +64,7 @@ def format_date(date_str: str) -> str:
                     continue
             else:
                 return date_str
-        return dt.strftime('%d.%m.%Y')
+        return dt.strftime("%d.%m.%Y")
     except Exception:
         return date_str
 
@@ -144,7 +142,7 @@ def print_operation(op: Dict[str, Any], index: Optional[int] = None):
             masked_from = f"Счет {mask_account_number(''.join(filter(str.isdigit, acc_str)))}"
         else:
             # Извлекаем цифры для маскировки карты
-            digits = ''.join(filter(str.isdigit, acc_str))
+            digits = "".join(filter(str.isdigit, acc_str))
             masked_from = mask_card_number(digits) if len(digits) == 16 else acc_str
         print(f"⬆ Отправитель: {masked_from}")
 
@@ -153,7 +151,7 @@ def print_operation(op: Dict[str, Any], index: Optional[int] = None):
         if "счет" in acc_str.lower():
             masked_to = f"Счет {mask_account_number(''.join(filter(str.isdigit, acc_str)))}"
         else:
-            digits = ''.join(filter(str.isdigit, acc_str))
+            digits = "".join(filter(str.isdigit, acc_str))
             masked_to = mask_card_number(digits) if len(digits) == 16 else acc_str
         print(f"⬇ Получатель: {masked_to}")
 
@@ -196,7 +194,7 @@ def main():
     file_options = [
         "Получить информацию о транзакциях из JSON-файла",
         "Получить информацию о транзакциях из CSV-файла",
-        "Получить информацию о транзакциях из XLSX-файла"
+        "Получить информацию о транзакциях из XLSX-файла",
     ]
 
     file_choice = get_user_choice(file_options, "📂 Выберите тип файла для загрузки:")
@@ -226,6 +224,7 @@ def main():
         print("Убедитесь, что файл существует в папке data/")
         print("Доступные файлы:")
         import os
+
         if os.path.exists("data"):
             for f in os.listdir("data"):
                 print(f"  - data/{f}")

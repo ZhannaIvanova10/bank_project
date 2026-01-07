@@ -3,11 +3,11 @@
 Отдельный тестовый файл для проверки домашнего задания.
 Не зависит от структуры проекта.
 """
-import sys
 import os
 import re
+import sys
 from collections import Counter
-from typing import List, Dict
+from typing import Dict, List
 
 # Добавляем текущую директорию в путь
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -25,14 +25,15 @@ try:
     if os.path.exists("src/search.py"):
         # Читаем файл как модуль
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("search_module", "src/search.py")
         search_module = importlib.util.module_from_spec(spec)
-        
+
         # Исполняем код модуля
         with open("src/search.py", "r", encoding="utf-8") as f:
             code = f.read()
             exec(code, search_module.__dict__)
-        
+
         # Получаем функцию
         process_bank_search = search_module.process_bank_search
 
@@ -42,10 +43,10 @@ try:
             {"id": 2, "description": "Открытие вклада", "amount": 200},
             {"id": 3, "description": "Перевод с карты", "amount": 300},
         ]
-        
+
         # Тест
         result = process_bank_search(test_data, "Перевод")
-        
+
         if len(result) == 2:
             print("✅ process_bank_search работает корректно!")
             print(f"   Найдено {len(result)} операций с 'Перевод'")
@@ -54,7 +55,7 @@ try:
             print(f"❌ Ошибка: ожидалось 2 операции, получено {len(result)}")
     else:
         print("❌ Файл src/search.py не найден")
-        
+
 except Exception as e:
     print(f"❌ Ошибка тестирования search: {e}")
 
@@ -65,13 +66,14 @@ print("-" * 40)
 try:
     if os.path.exists("src/counter.py"):
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("counter_module", "src/counter.py")
         counter_module = importlib.util.module_from_spec(spec)
-        
+
         with open("src/counter.py", "r", encoding="utf-8") as f:
             code = f.read()
             exec(code, counter_module.__dict__)
-        
+
         process_bank_operations = counter_module.process_bank_operations
         # Тестовые данные
         test_data = [
@@ -80,13 +82,13 @@ try:
             {"description": "Вклад", "amount": 300},
             {"description": "Платеж", "amount": 400},
         ]
-        
+
         # Тест
         categories = ["Перевод", "Вклад", "Платеж", "Кредит"]
         result = process_bank_operations(test_data, categories)
-        
+
         expected = {"Перевод": 2, "Вклад": 1, "Платеж": 1, "Кредит": 0}
-        
+
         if result == expected:
             print("✅ process_bank_operations работает корректно!")
             print(f"   Результат: {result}")
@@ -94,7 +96,7 @@ try:
             print(f"❌ Ошибка: ожидалось {expected}, получено {result}")
     else:
         print("❌ Файл src/counter.py не найден")
-        
+
 except Exception as e:
     print(f"❌ Ошибка тестирования counter: {e}")
 
@@ -105,9 +107,10 @@ print("-" * 40)
 if os.path.exists("data/operations.json"):
     try:
         import json
+
         with open("data/operations.json", "r", encoding="utf-8") as f:
             data = json.load(f)
-        
+
         print(f"✅ Файл data/operations.json существует и корректный")
         print(f"   Загружено {len(data)} операций")
         # Проверяем структуру данных
@@ -117,7 +120,7 @@ if os.path.exists("data/operations.json"):
             print(f"     Описание: {sample.get('description', 'Нет')}")
             print(f"     Сумма: {sample.get('amount', sample.get('operationAmount', {}).get('amount', 'Нет'))}")
             print(f"     Статус: {sample.get('state', 'Нет')}")
-            
+
     except Exception as e:
         print(f"❌ Ошибка чтения файла: {e}")
 else:
@@ -129,17 +132,13 @@ print("-" * 40)
 
 if os.path.exists("main_simple.py"):
     print("✅ Файл main_simple.py существует")
-    
+
     # Проверяем что файл содержит основные функции
     with open("main_simple.py", "r", encoding="utf-8") as f:
         content = f.read()
-        
-    required_functions = [
-        "def process_bank_search",
-        "def process_bank_operations", 
-        "def main()"
-    ]
-    
+
+    required_functions = ["def process_bank_search", "def process_bank_operations", "def main()"]
+
     all_found = True
     for func in required_functions:
         if func in content:
@@ -151,7 +150,7 @@ if os.path.exists("main_simple.py"):
         print("✅ Основная программа содержит все необходимые функции")
     else:
         print("⚠ Основной программе не хватает некоторых функций")
-        
+
 else:
     print("❌ Файл main_simple.py не найден")
 

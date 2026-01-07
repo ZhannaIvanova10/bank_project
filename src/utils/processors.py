@@ -1,6 +1,6 @@
 import re
 from collections import Counter
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 
 def process_bank_search(data: List[Dict[str, Any]], search: str) -> List[Dict[str, Any]]:
@@ -21,7 +21,7 @@ def process_bank_search(data: List[Dict[str, Any]], search: str) -> List[Dict[st
     pattern = re.compile(re.escape(search), re.IGNORECASE)
 
     for transaction in data:
-        description = transaction.get('description', '')
+        description = transaction.get("description", "")
         if pattern.search(description):
             result.append(transaction)
 
@@ -48,7 +48,7 @@ def process_bank_operations(data: List[Dict[str, Any]], categories: List[str]) -
     # Собираем все описания
     descriptions = []
     for transaction in data:
-        description = transaction.get('description', '').lower()
+        description = transaction.get("description", "").lower()
         if description:
             descriptions.append(description)
 
