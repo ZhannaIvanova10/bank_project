@@ -1,38 +1,33 @@
-from typing import Callable, Optional, Any
-import datetime
-import functools
-
+from collections.abc import Callable
+from typing import Any, Optional
+from functools import wraps
 
 def log(filename: Optional[str] = None) -> Callable:
     """
-    Декоратор для логирования вызовов функций
-
-    :param filename: Имя файла для логирования (None - вывод в консоль)
-    :return: Декорированная функция
+    Декоратор для логирования работы функций.
+    
+    :param filename: Имя файла для записи логов (если None, логи выводятся в консоль).
+    :return: Декорированная функция.
     """
-
     def decorator(func: Callable) -> Callable:
-        @functools.wraps(func)
+        @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             try:
                 result = func(*args, **kwargs)
-                log_message = f"{timestamp} {func.__name__} ok\n"
+                message = f"{func.__name__} ok"
                 if filename:
                     with open(filename, "a") as f:
-                        f.write(log_message)
+                        f.write(message + "\n")
                 else:
-                    print(log_message, end="")
+                    print(message)
                 return result
             except Exception as e:
-                log_message = f"{timestamp} {func.__name__} error: {type(e).__name__}. Inputs: {args}, {kwargs}\n"
+                message = f"{func.__name__} error: {type(e).__name__}. Inputs: {args}, {kwargs}"
                 if filename:
                     with open(filename, "a") as f:
-                        f.write(log_message)
+                        f.write(message + "\n")
                 else:
-                    print(log_message, end="")
+                    print(message)
                 raise
-
         return wrapper
-
     return decorator

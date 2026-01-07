@@ -1,44 +1,27 @@
 [tool.poetry]
-name = "bank-project"
+name = "bank_transactions"
 version = "0.1.0"
-description = "Bank operations processing system"
+description = "A project for processing bank transactions"
 authors = ["Your Name <your.email@example.com>"]
-readme = "README.md"
-packages = [
-    {include = "bank_project", from = "src"}
-]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-pytest = "^8.4.1"
-requests = "^2.32.4"
-pandas = "^2.3.1"
-openpyxl = "^3.1.5"
-python-dotenv = "^1.1.1"
-package-name = "^0.1"
+python = "^3.13"
+requests = "^2.31.0"
+pandas = "^2.1.0"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.group.lint.dependencies]
-flake8 = "^7.3.0"
-black = "^25.1.0"
-isort = "^6.0.1"
-mypy = "^1.17.0"
-
-
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^4.2.0"
-package-name = "^0.1"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+flake8 = "^6.1.0"
+black = "^23.11.0"
+isort = "^5.12.0"
+mypy = "^1.6.0"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
 
 [tool.black]
 line-length = 119
 exclude = '''
-/(
-    \.git
-    | __pycache__
-)/
+.git
 '''
 
 [tool.isort]
@@ -52,4 +35,4 @@ ensure_newline_before_comments = true
 [tool.mypy]
 disallow_untyped_defs = true
 warn_return_any = true
-exclude = 'venv/'
+exclude = "venv"

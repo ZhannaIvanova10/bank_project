@@ -1,35 +1,37 @@
-from datetime import datetime
-from .masks import get_mask_card_number, get_mask_account
+from src.masks.masks import get_mask_card_number, get_mask_account
 
 
-def mask_account_card(account_info: str) -> str:
+def mask_account_card(data: str) -> str | None:
     """
-    Маскирует карту/счет в зависимости от типа
+    Маскирует номер карты или счета в зависимости от типа данных.
 
-    :param account_info: Строка типа "Visa Platinum 7000792289606361" или "Счет 73654108430135874305"
-    :return: Замаскированная строка
+    :param data: Строка с типом и номером карты/счета.
+    :return: Замаскированная строка или None в случае ошибки.
     """
-    parts = account_info.split()
+    parts = data.split()
     if len(parts) < 2:
-        return account_info
+        return None
 
-    *card_type, number = parts
-    card_type = ' '.join(card_type)
+    if parts[0].lower() == "счет":
+        account_number = parts[-1]
+        masked = get_mask_account(account_number)
+        return f"{' '.join(parts[:-1])} {masked}"
+    else:
+        card_number = parts[-1]
+        masked = get_mask_card_number(card_number)
+        return f"{' '.join(parts[:-1])} {masked}"
 
-    if card_type.lower() == 'счет':
-        return f"{card_type} {get_mask_account(number)}"
-    return f"{card_type} {get_mask_card_number(number)}"
 
-
-def get_date(date_str: str) -> str:
+def get_date(date_str: str) -> str | None:
     """
-    Форматирует дату из ISO в DD.MM.YYYY
+    Преобразует дату из формата ISO в формат ДД.ММ.ГГГГ.
 
-    :param date_str: Дата в формате "2019-08-26T10:50:58.294041"
-    :return: Дата в формате "26.08.2019"
+    :param date_str: Строка с датой в формате ISO.
+    :return: Дата в формате ДД.ММ.ГГГГ или None в случае ошибки.
     """
+    from datetime import datetime
     try:
         date_obj = datetime.fromisoformat(date_str)
         return date_obj.strftime("%d.%m.%Y")
     except ValueError:
-        return date_str
+        return None

@@ -1,28 +1,20 @@
-from datetime import datetime
-from typing import List, Dict, Any
-
-
-def filter_by_state(transactions: List[Dict[str, Any]], state: str = "EXECUTED") -> List[Dict[str, Any]]:
+def filter_by_state(transactions: list[dict], state: str = "EXECUTED") -> list[dict]:
     """
-    Фильтрует транзакции по статусу
+    Фильтрует транзакции по статусу.
 
-    :param transactions: Список транзакций
-    :param state: Статус для фильтрации (по умолчанию "EXECUTED")
-    :return: Отфильтрованный список
+    :param transactions: Список транзакций.
+    :param state: Статус для фильтрации (по умолчанию "EXECUTED").
+    :return: Отфильтрованный список транзакций.
     """
     return [t for t in transactions if t.get("state", "").upper() == state.upper()]
 
 
-def sort_by_date(transactions: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[str, Any]]:
+def sort_by_date(transactions: list[dict], reverse: bool = True) -> list[dict]:
     """
-    Сортирует транзакции по дате
+    Сортирует транзакции по дате.
 
-    :param transactions: Список транзакций
-    :param reverse: Сортировка по убыванию (по умолчанию True)
-    :return: Отсортированный список
+    :param transactions: Список транзакций.
+    :param reverse: Флаг сортировки по убыванию (по умолчанию True).
+    :return: Отсортированный список транзакций.
     """
-    return sorted(
-        transactions,
-        key=lambda x: datetime.fromisoformat(x["date"]),
-        reverse=reverse
-    )
+    return sorted(transactions, key=lambda x: x.get("date", ""), reverse=reverse)
