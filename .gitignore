@@ -1,8 +1,11 @@
-echo "__pycache__/
+# Python
+__pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+
+# Build and distribution
 build/
 develop-eggs/
 dist/
@@ -18,19 +21,53 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Logs and databases
 *.log
 *.sqlite
+*.sqlite3
+
+# Editor and IDE
+.vscode/
+.idea/
 *.swp
+*.swo
 .DS_Store
-.env
-.venv
+.history/
+
+# Virtual environments
+.venv/
 venv/
 ENV/
 env/
-.vscode/
-.idea/
-.history/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+secrets.ini
+
+# Testing and coverage
 .coverage
 htmlcov/
 .pytest_cache/
-" > .gitignore
+.mypy_cache/
+.pytest_cache/
+test-results.xml
+
+# Poetry
+poetry.lock
+
+# System files
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# Project specific
+data/
+*.csv
+*.xlsx
+*.json
+!requirements.json
